@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>My Day — Precious</title>
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#080D1A">
+<style>
+  :root {
+    --navy: #080D1A;
+    --navy2: #0F1628;
+    --navy3: #162035;
+    --teal: #1DB88A;
+    --teal-dim: rgba(29,184,138,0.12);
+    --amber: #F5A623;
+    --amber-dim: rgba(245,166,35,0.13);
+    --white: #F0F4FF;
+    --muted: rgba(240,244,255,0.45);
+    --border: rgba(240,244,255,0.08);
+    --radius: 14px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--navy);
+    color: var(--white);
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 3rem 2rem 2rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -120px; right: -120px;
+    width: 480px; height: 480px;
+    background: radial-gradient(circle, rgba(29,184,138,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .live-clock {
+    font-size: clamp(4rem, 18vw, 9rem);
+    font-weight: 300;
+    letter-spacing: -0.03em;
+    font-variant-numeric: tabular-nums;
+    color: var(--white);
+    line-height: 1;
+    margin-bottom: 0.5rem;
+  }
+
+  .live-date {
+    font-size: 0.95rem;
+    color: var(--muted);
+    letter-spacing: 0.04em;
+    margin-bottom: 2.5rem;
+  }
+
+  .now-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    color: var(--teal);
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .now-block {
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    font-weight: 500;
+    line-height: 1.2;
+    margin-bottom: 0.4rem;
+  }
+
+  .now-sub {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-bottom: 2rem;
+  }
+
+  .progress-wrap {
+    width: 100%;
+    max-width: 340px;
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 0.5rem;
+  }
+
+  .progress-bar {
+    height: 100%;
+    background: var(--teal);
+    border-radius: 2px;
+    transition: width 10s linear;
+  }
+
+  .progress-label {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    opacity: 0.35;
+  }
+
+  .scroll-hint span { font-size: 0.7rem; letter-spacing: 0.06em; }
+
+  .chevron {
+    width: 18px; height: 10px;
+    border-left: 1.5px solid var(--white);
+    border-bottom: 1.5px solid var(--white);
+    transform: rotate(-45deg);
+    margin-top: -4px;
+  }
+
+  /* ── SCHEDULE ── */
+  .schedule {
+    padding: 0 1.25rem 4rem;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  .sched-heading {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+    text-transform: uppercase;
+    padding: 2rem 0 1.2rem 0.5rem;
+  }
+
+  .timeline {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 54px;
+    top: 10px; bottom: 10px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .block-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    padding: 6px 0;
+    position: relative;
+    transition: opacity 0.3s;
+  }
+
+  .block-row.past { opacity: 0.35; }
+
+  .block-row.active { opacity: 1; }
+
+  .block-time {
+    width: 48px;
+    flex-shrink: 0;
+    text-align: right;
+    padding-top: 14px;
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--muted);
+    line-height: 1.3;
+  }
+
+  .block-dot-col {
+    width: 22px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 17px;
+  }
+
+  .dot {
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--navy3);
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    transition: all 0.3s;
+  }
+
+  .block-row.active .dot {
+    background: var(--amber);
+    border-color: var(--amber);
+    box-shadow: 0 0 0 4px var(--amber-dim);
+  }
+
+  .block-card {
+    flex: 1;
+    margin-left: 10px;
+    background: var(--navy2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    transition: all 0.3s;
+  }
+
+  .block-row.active .block-card {
+    background: var(--amber-dim);
+    border-color: rgba(245,166,35,0.3);
+  }
+
+  .block-row.active .block-card .block-name {
+    color: var(--amber);
+  }
+
+  .block-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 3px;
+    transition: color 0.3s;
+  }
+
+  .block-detail {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .badge {
+    display: inline-block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: var(--amber);
+    background: var(--amber-dim);
+    border-radius: 4px;
+    padding: 2px 7px;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .day-note {
+    font-size: 0.75rem;
+    color: var(--muted);
+    text-align: center;
+    padding-top: 2rem;
+    line-height: 1.8;
+  }
+
+  /* rest of day placeholder */
+  .rest-label {
+    font-size: 0.72rem;
+    color: var(--muted);
+    padding: 1.2rem 0 0 80px;
+    font-style: italic;
+  }
+</style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="live-clock" id="clock">--:--</div>
+  <div class="live-date" id="date-str"></div>
+
+  <div class="now-label">Right now</div>
+  <div class="now-block" id="now-name">—</div>
+  <div class="now-sub" id="now-detail"></div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar" id="prog-bar" style="width:0%"></div>
+  </div>
+  <div class="progress-label" id="prog-label"></div>
+
+  <div class="scroll-hint" aria-hidden="true">
+    <span>Full schedule</span>
+    <div class="chevron"></div>
+  </div>
+</section>
+
+<section class="schedule">
+  <div class="sched-heading">Today's blocks</div>
+  <div class="timeline" id="timeline"></div>
+  <div class="rest-label" id="rest-note"></div>
+  <div class="day-note">
+    RCCG Incubator runs Mon · Wed · Fri<br>
+    Total daily commitment · ~13.5 hrs
+  </div>
+</section>
+
+<script>
+const BLOCKS = [
+  { name: "Prayers",          detail: "Start the day centered",                start: [5,0],  end: [6,0]  },
+  { name: "Trading",          detail: "Forex & Gold — London session",          start: [6,0],  end: [8,0]  },
+  { name: "Scholarship",      detail: "1 hour daily study",                     start: [8,0],  end: [9,0]  },
+  { name: "DotVests",         detail: "Grants · Partnerships · Tech · Legal",   start: [9,0],  end: [13,0] },
+  { name: "SIMVO Training",   detail: "Session 1 of 2",                         start: [13,0], end: [15,0] },
+  { name: "RCCG Incubator",   detail: "3× per week · Mon, Wed, Fri",            start: [15,0], end: [16,30], freq: "3×/wk" },
+  { name: "SIMVO Training",   detail: "Session 2 of 2",                         start: [16,30],end: [18,30] },
+];
+
+function toMins([h, m]) { return h * 60 + m; }
+function fmtTime([h, m]) {
+  const suffix = h < 12 ? "AM" : "PM";
+  const hh = h > 12 ? h - 12 : (h === 0 ? 12 : h);
+  return `${hh}:${String(m).padStart(2,"0")} ${suffix}`;
+}
+
+function getNow() {
+  const d = new Date();
+  return { h: d.getHours(), m: d.getMinutes(), s: d.getSeconds(), date: d };
+}
+
+function getActiveBlock(nowMins) {
+  return BLOCKS.find(b => nowMins >= toMins(b.start) && nowMins < toMins(b.end));
+}
+
+function buildTimeline() {
+  const tl = document.getElementById("timeline");
+  tl.innerHTML = "";
+  BLOCKS.forEach((b, i) => {
+    const row = document.createElement("div");
+    row.className = "block-row";
+    row.id = "row-" + i;
+    row.innerHTML = `
+      <div class="block-time">${fmtTime(b.start)}</div>
+      <div class="block-dot-col"><div class="dot"></div></div>
+      <div class="block-card">
+        <div class="block-name">${b.name}${b.freq ? `<span class="badge">${b.freq}</span>` : ""}</div>
+        <div class="block-detail">${detail_str(b)}</div>
+      </div>`;
+    tl.appendChild(row);
+  });
+}
+
+function detail_str(b) {
+  const dur = toMins(b.end) - toMins(b.start);
+  const h = Math.floor(dur/60), m = dur%60;
+  const durStr = h && m ? `${h}h ${m}m` : h ? `${h} hr` : `${m} min`;
+  return `${b.detail} · ${durStr}`;
+}
+
+const DAYS = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+
+function tick() {
+  const { h, m, s, date } = getNow();
+  const nowMins = h * 60 + m;
+
+  // Clock
+  const hh = h > 12 ? h-12 : (h===0?12:h);
+  const colon = s % 2 === 0 ? ":" : " ";
+  document.getElementById("clock").textContent = `${hh}${colon}${String(m).padStart(2,"0")}`;
+  document.getElementById("date-str").textContent =
+    `${DAYS[date.getDay()]}  ·  ${date.getDate()} ${MONTHS[date.getMonth()]} ${date.getFullYear()}`;
+
+  // Active block
+  const active = getActiveBlock(nowMins);
+  if (active) {
+    document.getElementById("now-name").textContent = active.name;
+    document.getElementById("now-detail").textContent = active.detail;
+    const elapsed = nowMins - toMins(active.start);
+    const total = toMins(active.end) - toMins(active.start);
+    const pct = Math.min(100, Math.round((elapsed / total) * 100));
+    document.getElementById("prog-bar").style.width = pct + "%";
+    const rem = total - elapsed;
+    const remH = Math.floor(rem/60), remM = rem%60;
+    const remStr = remH && remM ? `${remH}h ${remM}m left` : remH ? `${remH}h left` : `${remM}m left`;
+    document.getElementById("prog-label").textContent = `${pct}% done · ${remStr}`;
+  } else if (nowMins < toMins(BLOCKS[0].start)) {
+    document.getElementById("now-name").textContent = "Rest";
+    document.getElementById("now-detail").textContent = `First block at ${fmtTime(BLOCKS[0].start)}`;
+    document.getElementById("prog-bar").style.width = "0%";
+    document.getElementById("prog-label").textContent = "";
+  } else {
+    document.getElementById("now-name").textContent = "Done for the day";
+    document.getElementById("now-detail").textContent = "All blocks complete. Rest well.";
+    document.getElementById("prog-bar").style.width = "100%";
+    document.getElementById("prog-label").textContent = "";
+  }
+
+  // Row states
+  BLOCKS.forEach((b, i) => {
+    const row = document.getElementById("row-" + i);
+    if (!row) return;
+    if (nowMins >= toMins(b.end)) row.className = "block-row past";
+    else if (nowMins >= toMins(b.start) && nowMins < toMins(b.end)) row.className = "block-row active";
+    else row.className = "block-row";
+  });
+}
+
+buildTimeline();
+tick();
+setInterval(tick, 1000);
+</script>
+</body>
+</html>
